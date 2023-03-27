@@ -1,0 +1,57 @@
+
+
+
+
+text_block 1
+	name = MOST
+	text =
+RSScanOptFormat1
+
+[MODE] 
+SCAN
+
+PREFIX mosttmp
+PREFIX_STYLE 0
+CLUSTER 0 0 0 0 1 ""
+USERSIM_CALLSTYLE 0 0
+
+[SIMULATION]
+SIMTOOL ST_DEFAULT 
+WINDOW_SIZE 0
+VERBOSITY 0
+PRE_WHOLE_CMD 
+POST_WHOLE_CMD 
+PRE_CMD 
+POST_CMD 
+PREPOST_ACTIVE 0
+PREPOST_ERRCODES 0
+EXTRA_DATAINDEX_CMDS 
+
+[ALGORITHM]
+NAME root_1d_brent
+MAXSTEPS DEFAULT  1000
+CONVERGENCE DEFAULT  1.0e-7
+
+[INDEPENDENT_VARIABLES_SCAN]
+IV_Declarations
+SYMTAB_SCALAR A Y :  IV_MULTIVAR :  :  :  :  : CCmodified48875.mv :  :
+
+[INDEPENDENT_VARIABLES_OPT]
+IV_Declarations
+
+IV_InitialValues
+
+[MEASUREMENTS:ST_BANDSOLVE]
+STANDARD bs_bandmap_te Y 
+STANDARD bs_eig_te_band_0 Y 
+STANDARD bs_eig_te_band_1 Y 
+STANDARD bs_eig_te_band_2 Y 
+STANDARD bs_eig_te_band_3 Y 
+STANDARD bs_eig_te_band_4 Y 
+STANDARD bs_gaps Y 
+
+[METRICS]
+
+	end text
+end text_block
+
