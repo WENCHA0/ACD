@@ -9,7 +9,11 @@
 #include <vector>
 #include <cmath>
 
-int num = 1;               //Test number
+/* Must activate mpb virtual environment before using */
+
+int num = 1;               //Testing number
+
+//Parameters for PMC
 double wA, wB, wC, wD;     //Frequencies
 double k1, k3, k1d, k2d;   //Kappas
 double p1 = 0.287;         //period(mm) double
@@ -20,39 +24,34 @@ double p5 = 0.0;           //Ki double
 double p6 = 0.0;           //reflectivity double
 int p7 = 50;               //Time-step
 
-//File storing path:
-// *** Mac ***
-// std::string indPath = "/Users/joshua/Desktop/ACD/designs/xxx.ind";
-// std::string settingsPath = "/Users/joshua/Desktop/ACD/Settings.txt";
-// std::string textBlockPath = "/Users/joshua/Desktop/ACD/TextBlock.txt";
-// std::string pweDataPath = "/Users/joshua/Desktop/ACD/bin/bstmp_eigs_TM.dat";
-std::string exePath     = "/Users/joshua/Desktop/PMC_MacOS.exe";
-std::string recordPath  = "/Users/joshua/Desktop/MPB/18-07-23/data.csv";
-std::string p8          = "/Users/joshua/Desktop/MPB/18-07-23/PMC.csv";
-
-
-std::string genePath    = "/Users/joshua/Desktop/MPB/18-07-23/gene01.txt";
-std::string scriptPath  = "/Users/joshua/Desktop/MPB/18-07-23/script01.py";
-std::string headerPath  = "/Users/joshua/Desktop/MPB/18-07-23/header.txt";
-std::string footerPath  = "/Users/joshua/Desktop/MPB/18-07-23/footer.txt";
-std::string pweDataPath = "/Users/joshua/Desktop/MPB/18-07-23/script01.dat";
+//File storing paths:
+//PLEASE ENTER YOUR LOCAL PATH HERE:
+std::string exePath     = "/Users/.../ACD/bin/PMC.exe";    //Probablistic Markov Chain executable
+std::string recordPath  = "/Users/.../ACD/data.csv";
+std::string p8          = "/Users/.../ACD/PMC.csv";
+std::string genePath    = "/Users/.../ACD/gene.txt";
+std::string scriptPath  = "/Users/.../ACD/script.py";
+std::string headerPath  = "/Users/.../ACD/header.txt"; //Scripts before creating cubes
+std::string footerPath  = "/Users/.../ACD/footer.txt"; //Scripts after creating cubes
+std::string pweDataPath = "/Users/.../ACD/script.dat"; //The auto-generated script
 
 
 //PWE commands
-std::string command1 = "python script01.py > script01.out";       //Run MPB simulation
-std::string command2 = "grep freqs: script01.out > script01.dat"; //Grab useful data
+std::string command1 = "python script.py > script.out";       //Run MPB simulation
+std::string command2 = "grep freqs: script.out > script.dat"; //Grab useful data
 
 
 //=== Dashboard ===
-int n = 9;              //Grid resolution (must be an odd number)
+int n = 9;               //Grid resolution (must be an odd number)
 
 
-int m = (n+1)/2;        //Median number
+int m = (n+1)/2;         //Median number
 int arraySize  = n * n;
 
 
 /* ① */
 void geneGenerator(){
+    /* Step 1 */
     // Seed the random number generator
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -66,7 +65,7 @@ void geneGenerator(){
         geneArray[i] = dist(gen);
     }
 
-    // Print the generated array to a txt file
+    // Print the generated array to a txt file (as a record)
     std::ofstream txt(genePath);
     if (txt.is_open()) {
         for (int i : geneArray) {
@@ -76,9 +75,8 @@ void geneGenerator(){
     else {
             std::cerr << "Error: Could not open txt file." << std::endl;
     }
-    /* ===== Gene generation is finished here ===== */
 
-
+    /* Step 2 */
     // To write a python script for MPB   
     std::ofstream py(scriptPath);
     std::ifstream header(headerPath);
@@ -101,8 +99,7 @@ void geneGenerator(){
     }
     header.close();
 
-    //Parameters (Do calculation inside python)
-
+    //Parameters (Do calculations inside python)
     py << "n  = " + std::to_string(n) + "       # Grid resolution" << std::endl; //
     py << "a  = 287     # Period"          << std::endl;
     py << "ul = 175     # Unit Length"     << std::endl;
@@ -120,10 +117,10 @@ void geneGenerator(){
         if (geneArray[i] == 0) {      //If the Gene fragment is 0, skip
             continue; // Skip
         }
-        else if (geneArray[i] == 1){  //If the Gene fragment is 1, create the cube, and then place it
-            int pn = i + 1;           //position number (arrays start from 0, position is +1)
-            int rowNum = ceil(pn/n);  //
-            int colNum = pn%n;
+        else if (geneArray[i] == 1){  //If the Gene fragment is 1, create the cube, and place it
+            int pn = i + 1;           //position number (arrays start from 0, position is therefore +1)
+            int rowNum = ceil(pn/n);  //Calculate its row number
+            int colNum = pn%n;        //Calculate its column number
 
             std::string rowStr = std::to_string(rowNum-m); // y displacement
             std::string colStr = std::to_string(colNum-m); // x displacement
@@ -133,7 +130,7 @@ void geneGenerator(){
     }
     py << "]" << std::endl;
 
-    /* Read and write TextBlock.txt */
+    /* add footer.txt */
     if (footer.is_open()) {
         if (py.is_open()) {
             std::string line;
@@ -186,20 +183,15 @@ void loadPweData(){
         i++;
     }
     //The last token
-    tokens[10] = line.substr(0, 8); //length +1
+    tokens[10] = line.substr(0, 8);
 
-    //Assign value to ωA,ωB,ωC,ωD
+    //Assign values to ωA,ωB,ωC,ωD
     try {
         wA = std::stod(tokens[7]);
         wB = std::stod(tokens[8]);
         wC = std::stod(tokens[9]);
         wD = std::stod(tokens[10]);
 
-        std::cout << tokens[7] << std::endl;
-        std::cout << tokens[8] << std::endl;
-        std::cout << tokens[9] << std::endl;
-        std::cout << tokens[10] << std::endl;
-        
     } catch (std::invalid_argument& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
@@ -222,12 +214,6 @@ void processData() {
     k1 = sqrt((b-((convertWC*nav)/c)+k3)*(b-k3)/4);
 	k2d = ( 2 * pow(k1, 2))/b;
     k1d = k3;
-    
-    std::cout << "β0  : " << b  << std::endl;
-    std::cout << "κ1  : " << k1 << std::endl;
-    std::cout << "κ3  : " << k3 << std::endl;
-    std::cout << "κ1D : " << k1d << std::endl;
-    std::cout << "κ2D : " << k2d << std::endl;
 
     p2 = k1d;
     p3 = k2d;
@@ -243,18 +229,17 @@ void callPmc(){
     
     int result = system(command.c_str());
 
-    //Command execution test:
     if (result == 0) {
         std::cout << "Probabilistic Markov Chain executed successfully." << std::endl;
     } else {
-        std::cout << "Probabilistic Markov Chain failed to execute." << std::endl;
+        std::cout << "Probabilistic Markov Chain failed." << std::endl;
     }  
 }
 
 /* ⑥ */
 void recordAlphaParallel(){
-    std::ofstream data(recordPath); //New output data recording file
-    std::ifstream csv(p8);          //csv file generated from last step
+    std::ofstream data(recordPath); //New data-recording output file
+    std::ifstream csv(p8);          //csv file generated from Markov Chain
 
     data << "No.,wA,wB,wC,wD,K1,K3,K1D,K2D,a||\n" + std::to_string(num) + ","; //Headers
     data << std::to_string(wA)+","+std::to_string(wB)+","+std::to_string(wC)+","+std::to_string(wD)+",";
