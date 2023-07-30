@@ -1,0 +1,29 @@
+
+default_material = mp.Medium(epsilon=11.9716)
+
+k_points = [
+    mp.Vector3(0.5),            # X
+    mp.Vector3(),               # Gamma
+    mp.Vector3(0.5, 0.5),       # M
+]
+k_points = mp.interpolate(0, k_points)
+
+ms = mpb.ModeSolver(
+    geometry=geometry,
+    geometry_lattice=geometry_lattice,
+    k_points=k_points,
+    resolution=resolution,
+    num_bands=num_bands,
+    default_material=default_material,
+)
+
+ms.run_te()
+te_freqs = ms.all_freqs
+ms.output_epsilon()
+
+md = mpb.MPBData(rectify=True, periods=3, resolution=32)
+eps = ms.get_epsilon()
+converted_eps = md.convert(eps)
+plt.imshow(converted_eps.T, interpolation='spline36', cmap='binary')
+plt.axis('off')
+plt.show()

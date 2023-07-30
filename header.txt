@@ -1,0 +1,10 @@
+import math
+import meep as mp
+from meep import mpb
+import matplotlib.pyplot as plt
+
+num_bands = 5
+resolution = 32
+
+geometry_lattice = mp.Lattice(size=mp.Vector3(1, 1))
+
